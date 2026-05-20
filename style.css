@@ -503,6 +503,7 @@ body.overlay-open #hint {
 
 #overlay.visible {
   display: flex;
+  pointer-events: auto;
 }
 
 /* ─── Left: 3D Model Panel ──────────────────── */
@@ -1381,6 +1382,8 @@ body.overlay-open #hint {
 
   /* Overlay: stack vertically, scrollable */
   #overlay {
+    height: 100dvh;
+    max-height: 100dvh;
     flex-direction: column;
     justify-content: flex-start;
     align-items: center;
@@ -1389,6 +1392,7 @@ body.overlay-open #hint {
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
     overscroll-behavior: contain;
+    touch-action: pan-y;
   }
 
   #overlay.visible {
@@ -1446,6 +1450,14 @@ body.overlay-open #hint {
     padding: 20px 18px 16px;
     border-radius: 14px;
     overflow-y: visible;
+    touch-action: pan-y;
+  }
+
+  #sb-info,
+  #course-tab-panel,
+  #sb-caddy,
+  #caddy-controls {
+    touch-action: pan-y;
   }
 
   #caddy-modes {
@@ -1454,6 +1466,7 @@ body.overlay-open #hint {
 
   #caddy-bubble {
     max-height: none;
+    overflow-y: visible;
   }
 
   #card-title {
@@ -1620,6 +1633,8 @@ body.overlay-open #hint {
   #overlay {
     gap: 10px;
     padding: 82px 12px 40px;
+    height: 100dvh;
+    max-height: 100dvh;
   }
 
   #model-panel {

@@ -1,7 +1,7 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
-import { golfLocations } from "./locations.js";
+import { golfLocations } from "./locations.js?v=mobile-course-map-fix-20260520";
 
 // ─── User Profile ─────────────────────────────────────────
 let userProfile = null;
@@ -956,6 +956,9 @@ function getCourseMapName(loc) {
   return loc?.amapPoiName || loc?.amapSearchKeyword || `${loc.name} 高尔夫球场`;
 }
 
+function isCourseMapVerified(loc) {
+  return loc?.mapPrecision === "verified" || loc?.mapPrecision === "amap-poi";
+}
 function toProviderLngLat(loc, provider = getActiveMapProvider()) {
   const center = getCourseMapCenter(loc);
   if (provider.coordinateSystem === "gcj02") return wgs84ToGcj02(center.lat, center.lng);
@@ -1765,8 +1768,9 @@ function loadTileBitmap(url) {
 }
 
 async function createCourseSatelliteCanvas(loc) {
+  const verified = isCourseMapVerified(loc);
   const canvasSize = isCompactViewport() ? 1024 : 1536;
-  const zoom = 17;
+  const zoom = verified ? 17 : 15;
   const canvas = document.createElement("canvas");
   canvas.width = canvasSize;
   canvas.height = canvasSize;
@@ -1821,7 +1825,13 @@ async function createCourseSatelliteCanvas(loc) {
   ctx.font = "700 32px Microsoft YaHei, sans-serif";
   ctx.fillText(loc.name, 36, canvasSize - 36);
   ctx.font = "20px Microsoft YaHei, sans-serif";
-  ctx.fillText(`${getCourseMapName(loc)} · 高德卫星瓦片`, 36, canvasSize - 12);
+  ctx.fillText(`${getCourseMapName(loc)} · ${verified ? "已校准球场实景" : "估算球场范围"} · 高德卫星瓦片`, 36, canvasSize - 12);
+
+  if (!verified) {
+    ctx.fillStyle = "rgba(255, 210, 120, 0.88)";
+    ctx.font = "18px Microsoft YaHei, sans-serif";
+    ctx.fillText("未配置高德 Key 时使用较大范围卫星图，接入 API 后会自动锁定球场 POI。", 36, canvasSize - 104);
+  }
 
   if (!loadedCount) throw new Error("satellite tiles failed");
   return canvas;
@@ -1846,13 +1856,15 @@ async function updateCourseTerrainView(index) {
   modelLabel.textContent = `${loc.name} · 正在加载实景卫星地形`;
 
   try {
-    let texture = courseTerrainTextureCache.get(loc.id);
+    const courseCenter = getCourseMapCenter(loc);
+    const textureKey = `${loc.id}-${loc.mapPrecision || "estimated"}-${courseCenter.lat.toFixed(5)}-${courseCenter.lng.toFixed(5)}`;
+    let texture = courseTerrainTextureCache.get(textureKey);
     if (!texture) {
       const canvas = await createCourseSatelliteCanvas(loc);
       texture = new THREE.CanvasTexture(canvas);
       texture.colorSpace = THREE.SRGBColorSpace;
       texture.anisotropy = Math.min(modelRenderer.capabilities.getMaxAnisotropy?.() || 1, 8);
-      courseTerrainTextureCache.set(loc.id, texture);
+      courseTerrainTextureCache.set(textureKey, texture);
     }
     if (token !== terrainLoadToken || selectedCourseIndex !== index) return;
     clearCourseTerrainGroup();
@@ -2458,9 +2470,13 @@ function hidePhotoDetail() {
 
 function getAmapCourseUrl(loc) {
   const courseCenter = getCourseMapCenter(loc);
-  const point = wgs84ToGcj02(courseCenter.lat, courseCenter.lng);
   const name = encodeURIComponent(getCourseMapName(loc));
   const city = encodeURIComponent(loc.city || loc.province || "");
+  if (!isCourseMapVerified(loc)) {
+    const keyword = encodeURIComponent(getCourseMapKeyword(loc));
+    return `https://uri.amap.com/search?keyword=${keyword}&city=${city}&src=3d-golf&callnative=0`;
+  }
+  const point = wgs84ToGcj02(courseCenter.lat, courseCenter.lng);
   return `https://uri.amap.com/marker?position=${point.lng.toFixed(6)},${point.lat.toFixed(6)}&name=${name}&src=3d-golf&coordinate=gaode&callnative=0&city=${city}`;
 }
 
@@ -2525,9 +2541,10 @@ function renderCourseTab(tabName = "terrain") {
 
   if (tabName === "realview") {
     const hasVideo = Boolean(loc.realviewVideo || loc.panoVideo);
+    const verified = isCourseMapVerified(loc);
     courseTabPanel.innerHTML = `
       <strong>实景地图 / 360 环视</strong>
-      <p>“打开高德地图”会按球场坐标进入外部真实地图；“播放本地实景”使用当前项目已有视频资源，不再混用。</p>
+      <p>${verified ? “当前球场已使用校准坐标。” : “当前球场使用估算坐标；接入高德 Key 后会自动搜索并锁定高尔夫 POI。”}”打开高德地图”会优先进入球场搜索/坐标结果；”播放本地实景”使用当前项目已有视频资源，不再混用。</p>
       <div class="course-action-row">
         <button class="course-realview-button" id="course-amap-embed" type="button">内嵌高德3D</button>
         <button class="course-realview-button" id="course-amap-open" type="button">打开高德地图</button>
