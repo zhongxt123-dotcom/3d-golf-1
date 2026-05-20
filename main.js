@@ -2544,7 +2544,7 @@ function renderCourseTab(tabName = "terrain") {
     const verified = isCourseMapVerified(loc);
     courseTabPanel.innerHTML = `
       <strong>实景地图 / 360 环视</strong>
-      <p>${verified ? “当前球场已使用校准坐标。” : “当前球场使用估算坐标；接入高德 Key 后会自动搜索并锁定高尔夫 POI。”}”打开高德地图”会优先进入球场搜索/坐标结果；”播放本地实景”使用当前项目已有视频资源，不再混用。</p>
+	      <p>${verified ? "“当前球场已使用校准坐标。”" : "“当前球场使用估算坐标；接入高德 Key 后会自动搜索并锁定高尔夫 POI。”"}“打开高德地图”会优先进入球场搜索/坐标结果；“播放本地实景”使用当前项目已有视频资源，不再混用。</p>
       <div class="course-action-row">
         <button class="course-realview-button" id="course-amap-embed" type="button">内嵌高德3D</button>
         <button class="course-realview-button" id="course-amap-open" type="button">打开高德地图</button>
