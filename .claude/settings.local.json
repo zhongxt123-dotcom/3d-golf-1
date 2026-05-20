@@ -9,7 +9,10 @@
       "Bash(git checkout *)",
       "Bash(git add *)",
       "Bash(git commit -m ' *)",
-      "Bash(git push *)"
+      "Bash(git push *)",
+      "Bash(node --check main.js)",
+      "Bash(xxd)",
+      "Bash(node -e \"try { require\\('fs'\\).readFileSync\\('main.js', 'utf8'\\); } catch\\(e\\) { console.log\\(e.message\\); }\")"
     ]
   }
 }
