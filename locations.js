@@ -356,7 +356,11 @@ export const golfLocations = [
     tags: { strategy: "稳健型/控球派", terrain: "山地球场爱好者", environment: "体能充沛", skill: "职业水准" }
   },
   { 
-    name: "重庆上邦", lat: 29.545, lng: 106.315, description: "背靠缙云山脉，坐拥天然海兰湖，风景极其秀丽。山地与湖泊的交替考验着球手极其精准的距离控制。",
+    name: "重庆上邦高尔夫俱乐部", lat: 29.49978, lng: 106.28269, description: "背靠缙云山脉，坐拥天然海兰湖，风景极其秀丽。山地与湖泊的交替考验着球手极其精准的距离控制。",
+    address: "重庆市九龙坡区白市驿上邦路5号（海兰云天旁）",
+    amapPoiName: "上邦高尔夫国际社区",
+    amapSearchKeyword: "重庆上邦高尔夫俱乐部 上邦高尔夫国际社区",
+    courseMapCenter: { lat: 29.49978, lng: 106.28269 },
     tags: { strategy: "稳健型/控球派", terrain: "山地球场爱好者", environment: "抗风能力弱", skill: "业余高手" }
   },
   { 
@@ -636,3 +640,115 @@ export const golfLocations = [
     tags: { strategy: "进取型/重炮手", terrain: "山地球场爱好者", environment: "怕热星人", skill: "职业水准" }
   }
 ];
+
+const provinceCityRules = [
+  { re: /海口|博鳌|观澜湖黑石|美视|海南/, province: "海南", city: "海口" },
+  { re: /三亚|亚龙湾|鹿回头|清水湾|神州|鉴湖|海中海/, province: "海南", city: "三亚" },
+  { re: /昆明|滇池|阳光|春城|曲靖/, province: "云南", city: "昆明" },
+  { re: /丽江/, province: "云南", city: "丽江" },
+  { re: /大理/, province: "云南", city: "大理" },
+  { re: /深圳|东莞|广州|珠海|佛山|中山/, province: "广东", city: "" },
+  { re: /上海/, province: "上海", city: "上海" },
+  { re: /北京/, province: "北京", city: "北京" },
+  { re: /成都/, province: "四川", city: "成都" },
+  { re: /重庆/, province: "重庆", city: "重庆" },
+  { re: /武汉/, province: "湖北", city: "武汉" },
+  { re: /长沙|株洲/, province: "湖南", city: "" },
+  { re: /南昌|九江/, province: "江西", city: "" },
+  { re: /拉萨/, province: "西藏", city: "拉萨" },
+  { re: /遵义|贵阳/, province: "贵州", city: "" },
+];
+
+function createCourseId(name, index) {
+  return `course-${String(index + 1).padStart(3, "0")}-${name
+    .toLowerCase()
+    .replace(/\s+/g, "-")
+    .replace(/[^\w\u4e00-\u9fa5-]/g, "")}`;
+}
+
+function inferRegion(name) {
+  const rule = provinceCityRules.find((item) => item.re.test(name));
+  if (!rule) return { province: "中国", city: "" };
+  return {
+    province: rule.province,
+    city: rule.city || name.slice(0, 2),
+  };
+}
+
+const coursePoiNameOverrides = {
+  "重庆上邦高尔夫俱乐部": "上邦高尔夫国际社区",
+  "重庆上邦": "上邦高尔夫国际社区",
+  "上海佘山国际": "上海佘山国际高尔夫俱乐部",
+  "深圳观澜湖奥拉沙宝": "深圳观澜湖高尔夫球会",
+  "东莞观澜湖": "东莞观澜湖高尔夫球会",
+  "海口观澜湖黑石": "海口观澜湖黑石高尔夫球场",
+  "三亚亚龙湾": "亚龙湾高尔夫球会",
+  "三亚鹿回头": "三亚鹿回头高尔夫球会",
+  "鉴湖蓝湾": "鉴湖蓝湾高尔夫球会",
+  "昆明春城湖畔": "昆明春城湖畔高尔夫度假村",
+  "丽江玉龙雪山": "玉龙雪山高尔夫俱乐部",
+  "成都麓山国际": "成都麓山国际乡村俱乐部",
+  "重庆保利": "重庆保利高尔夫球会",
+  "武汉驿山": "武汉驿山高尔夫俱乐部",
+  "长沙青竹湖": "长沙青竹湖高尔夫球会",
+  "南京钟山": "南京钟山国际高尔夫俱乐部",
+  "北京华彬": "北京华彬高尔夫俱乐部",
+  "天津盘山": "天津盘山高尔夫俱乐部",
+  "青岛石老人": "青岛石老人高尔夫俱乐部",
+  "大连金石滩": "大连金石高尔夫俱乐部",
+};
+
+function getDefaultCoursePoiName(name) {
+  if (coursePoiNameOverrides[name]) return coursePoiNameOverrides[name];
+  if (/高尔夫|球会|俱乐部|乡村俱乐部|林克司|林克斯/.test(name)) return name;
+  if (/度假|温泉|山庄|湖畔|国际|观澜湖|佘山|汤臣|沙河|名商|风神|翠湖|金湾|钟山|银杏湖|西湖|华彬|鸿华|盘山|金石滩|红旗谷|南山|石老人|麓山|观岭|驿山|青竹湖|金沙湖/.test(name)) {
+    return `${name}高尔夫俱乐部`;
+  }
+  return `${name}高尔夫球场`;
+}
+
+function getDefaultAmapKeyword(loc, region) {
+  const poiName = loc.amapPoiName || getDefaultCoursePoiName(loc.name);
+  const area = [loc.province || region.province, loc.city || region.city].filter(Boolean).join(" ");
+  return `${area} ${poiName} 高尔夫球场`.trim();
+}
+
+function enrichCourse(loc, index) {
+  const region = inferRegion(loc.name);
+  const video = index % 2 === 0
+    ? "./assets/course_realview_1.mp4"
+    : "./assets/course_realview_2.mp4";
+  const poiName = loc.amapPoiName || getDefaultCoursePoiName(loc.name);
+  const courseMapCenter = loc.courseMapCenter || { lat: loc.lat, lng: loc.lng };
+  return {
+    id: loc.id || createCourseId(loc.name, index),
+    province: loc.province || region.province,
+    city: loc.city || region.city,
+    address: loc.address || `${region.province}${region.city ? ` ${region.city}` : ""}`,
+    terrainMap: loc.terrainMap || "./assets/fallback/terrain.svg",
+    satelliteImage: loc.satelliteImage || "./assets/fallback/satellite.svg",
+    environmentImages: loc.environmentImages || ["./assets/fallback/environment.svg"],
+    realviewVideo: loc.realviewVideo || video,
+    panoVideo: loc.panoVideo || "",
+    externalMapProvider: loc.externalMapProvider || "amap",
+    externalMapUrl: loc.externalMapUrl || "",
+    amapPoiName: poiName,
+    amapSearchKeyword: loc.amapSearchKeyword || getDefaultAmapKeyword({ ...loc, amapPoiName: poiName }, region),
+    courseMapCenter,
+    mapPrecision: loc.mapPrecision || (loc.courseMapCenter ? "verified" : "estimated"),
+    model: loc.model || "./assets/golf_scene.glb",
+    holes: loc.holes || 18,
+    par: loc.par || 72,
+    terrainLabel: loc.terrainLabel || loc.tags.terrain,
+    environmentLabel: loc.environmentLabel || loc.tags.environment,
+    facilities: {
+      drivingRange: loc.facilities?.drivingRange ?? true,
+      hotel: loc.facilities?.hotel ?? index % 3 === 0,
+      restaurant: loc.facilities?.restaurant ?? true,
+    },
+  };
+}
+
+golfLocations.forEach((loc, index) => {
+  Object.assign(loc, enrichCourse(loc, index));
+});

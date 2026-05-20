@@ -17,6 +17,7 @@ const mimeTypes = {
   ".jpeg": "image/jpeg",
   ".webp": "image/webp",
   ".svg": "image/svg+xml",
+  ".mp4": "video/mp4",
 };
 
 function getFilePath(url) {

@@ -14,6 +14,9 @@
     <button id="overview-open" type="button">中国球场全览</button>
   </div>
   <div id="hint">拖拽浏览 &nbsp;|&nbsp; 滚轮缩放 &nbsp;|&nbsp; 点击光点查看详情</div>
+  <div id="transition-mask">
+    <div id="transition-copy">正在进入球场</div>
+  </div>
 
   <!-- ─── 用户档案初始化弹窗 ──────────────────────── -->
   <div id="profile-modal">
@@ -125,18 +128,46 @@
     </div>
   </div>
 
+  <section id="map-detail-layer" aria-hidden="true">
+    <canvas id="detail-map-canvas"></canvas>
+    <div id="map-detail-head">
+      <div>
+        <h2 id="map-detail-title">中国高尔夫局部地图</h2>
+        <p id="map-detail-meta">Ctrl + 拖动平移，滚轮缩放，底图按地图瓦片高清刷新</p>
+      </div>
+      <div id="map-detail-actions">
+        <button id="map-detail-reset" type="button">复位</button>
+        <button id="map-detail-close" type="button">返回地球</button>
+      </div>
+    </div>
+    <div id="map-provider-tools" aria-label="地图底图切换">
+      <button class="active" type="button" data-map-provider="amapSatellite">高德卫星</button>
+      <button type="button" data-map-provider="amapRoad">高德路网</button>
+      <button type="button" data-map-provider="osm">标准地图</button>
+    </div>
+    <div id="map-detail-scale">高精度刷新</div>
+  </section>
+
   <div id="overlay">
     <div id="model-panel">
       <div id="model-tools">
-        <button id="model-rotate-toggle" type="button">旋转模式：关</button>
+        <button id="model-terrain-toggle" class="active" type="button">实景地形</button>
+        <button id="model-generic-toggle" type="button">3D模型</button>
+        <button id="model-amap-toggle" type="button">高德3D</button>
+        <button id="model-rotate-toggle" type="button">自动环绕：开</button>
         <label id="model-speed-control">
           <span>旋转速度</span>
           <input id="model-rotate-speed" type="range" min="0" max="1.2" step="0.05" value="0.35">
         </label>
       </div>
       <canvas id="model-canvas"></canvas>
+      <div id="external-map-viewer" aria-hidden="true">
+        <div id="amap-course-map"></div>
+        <div id="external-map-status">正在准备实景三维地图</div>
+      </div>
       <div id="photo-detail" aria-hidden="true">
         <img id="photo-detail-image" alt="球场实景细节" />
+        <video id="photo-detail-video" playsinline muted loop controls preload="metadata"></video>
         <div id="photo-detail-caption">
           <strong id="photo-detail-title"></strong>
           <span id="photo-detail-meta"></span>
@@ -152,6 +183,27 @@
       <div id="sb-info">
         <h2 id="card-title"></h2>
         <p id="card-desc"></p>
+        <div id="course-info-grid">
+          <div>
+            <span>地形图</span>
+            <strong id="course-terrain"></strong>
+          </div>
+          <div>
+            <span>周围环境</span>
+            <strong id="course-environment"></strong>
+          </div>
+          <div>
+            <span>球场信息</span>
+            <strong id="course-summary"></strong>
+          </div>
+        </div>
+        <div id="course-tabs" role="tablist" aria-label="球场资料">
+          <button class="course-tab active" type="button" data-course-tab="terrain">地形图</button>
+          <button class="course-tab" type="button" data-course-tab="environment">周围环境</button>
+          <button class="course-tab" type="button" data-course-tab="info">球场信息</button>
+          <button class="course-tab" type="button" data-course-tab="realview">实景地图</button>
+        </div>
+        <div id="course-tab-panel" aria-live="polite"></div>
       </div>
 
       <div class="divider"></div>
@@ -186,6 +238,13 @@
       "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
     }
   }
+  </script>
+  <script>
+    window.GOLF_MAP_CONFIG = {
+      mapTileProvider: "amapSatellite",
+      amapKey: "",
+      amapSecurityJsCode: ""
+    };
   </script>
   <script type="module" src="main.js"></script>
 </body>
